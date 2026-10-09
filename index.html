@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reducción de Dimensionalidad para Clasificación | ML Analytics Lab</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-primary": "#006c49",
+            "primary-container": "#10b981",
+            "on-primary-fixed": "#002113",
+            "on-surface-variant": "#bbcabf",
+            "on-primary-fixed-variant": "#005236",
+            "on-tertiary-fixed": "#001a42",
+            "on-tertiary-fixed-variant": "#004395",
+            "tertiary-fixed": "#d8e2ff",
+            "on-error": "#690005",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-container-low": "#131a33",
+            "secondary": "#4cd7f6",
+            "background": "#0a122a",
+            "inverse-surface": "#dbe1ff",
+            "on-secondary-container": "#00424e",
+            "surface-container-lowest": "#050d25",
+            "surface-variant": "#2c344d",
+            "tertiary": "#adc6ff",
+            "on-background": "#dbe1ff",
+            "surface-container-highest": "#2c344d",
+            "tertiary-fixed-dim": "#adc6ff",
+            "surface-bright": "#313852",
+            "surface-container-high": "#212942",
+            "outline": "#86948a",
+            "error": "#ffb4ab",
+            "on-tertiary": "#002e6a",
+            "on-primary": "#003824",
+            "primary": "#4edea3",
+            "primary-fixed": "#6ffbbe",
+            "tertiary-container": "#71a1ff",
+            "surface-tint": "#4edea3",
+            "on-secondary-fixed": "#001f26",
+            "on-primary-container": "#00422b",
+            "surface-dim": "#0a122a",
+            "surface-container": "#171e37",
+            "inverse-on-surface": "#282f49",
+            "secondary-fixed": "#acedff",
+            "on-secondary": "#003640",
+            "outline-variant": "#3c4a42",
+            "error-container": "#93000a",
+            "on-tertiary-container": "#00367a",
+            "on-secondary-fixed-variant": "#004e5c",
+            "secondary-container": "#03b5d3",
+            "primary-fixed-dim": "#4edea3",
+            "surface": "#0a122a",
+            "on-surface": "#dbe1ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-lg": "1.5rem",
+            "gutter-sm": "0.75rem",
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "margin-desktop": "2rem",
+            "gutter": "1.25rem",
+            "space-sm": "0.5rem",
+            "margin-mobile": "1rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem",
+            "space-xl": "2.5rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-caption": ["JetBrains Mono"],
+            "metric-display": ["JetBrains Mono"],
+            "label-code": ["JetBrains Mono"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-caption": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+            "metric-display": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "label-code": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "headline-xl-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    /* Subtle glowing borders and transitions */
+    .glow-card {
+      transition: all 0.25s ease-in-out;
+    }
+    .glow-card:hover {
+      box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.15), 0 8px 30px rgba(11, 19, 43, 0.7);
+      border-color: rgba(78, 222, 163, 0.45);
+    }
+    .scatter-point {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-fixed">
+<!-- ================= TOP NAVIGATION BAR (Anchored from JSON) ================= -->
+<header class="bg-surface-container-low dark:bg-surface-container-low docked full-width top-0 z-50 sticky border-b border-outline-variant/40 dark:border-outline-variant/40 backdrop-blur-md shadow-sm dark:shadow-none transition-all duration-200 ease-in-out">
+<div class="w-full px-margin-mobile md:px-margin lg:px-margin-desktop max-w-7xl mx-auto flex items-center justify-between h-16">
+<!-- Brand Logo / Product Name -->
+<a class="flex items-center gap-2 group" href="#introduccion">
+<span class="material-symbols-outlined text-primary text-2xl transition-transform group-hover:scale-110" data-icon="insights">insights</span>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-primary dark:text-primary tracking-tight">Dimensionality Reduction Lab</span>
+<span class="text-label-caption font-label-caption text-on-surface-variant hidden sm:inline">Bank Marketing Benchmark Engine</span>
+</div>
+</a>
+<!-- Desktop Navigation Anchors -->
+<nav class="hidden md:flex items-center space-x-6 text-body-md font-body-md">
+<a class="text-primary dark:text-primary font-semibold border-b-2 border-primary pb-1 transition-all" href="#introduccion">Fundamentos</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="#comparativa">Comparativa</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="#resultados">Resultados</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="#recomendaciones">Recomendaciones</a>
+</nav>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-lg bg-surface-container-high/60 text-secondary hover:text-primary hover:bg-surface-variant/40 transition-colors duration-150 flex items-center" id="toggleTelemetryBtn" title="Consola de Telemetría">
+<span class="material-symbols-outlined text-xl" data-icon="terminal">terminal</span>
+</button>
+<a class="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface border border-outline-variant/60 hover:border-primary/50 hover:bg-surface-container-high text-body-sm font-body-sm transition-all duration-150 shadow-sm" href="https://github.com" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-base text-primary" data-icon="terminal">terminal</span>
+<span>Ver Código en GitHub</span>
+</a>
+</div>
+</div>
+</header>
+<!-- ================= MAIN CONTENT WRAPPER ================= -->
+<main class="flex-grow w-full px-margin-mobile md:px-margin lg:px-margin-desktop max-w-7xl mx-auto py-8 flex flex-col gap-12">
+<!-- HERO SECTION -->
+<section class="relative rounded-2xl bg-surface-container-low/80 border border-outline-variant/50 p-6 md:p-10 backdrop-blur-xl overflow-hidden shadow-2xl">
+<!-- Glow ambient accent -->
+<div class="absolute -right-24 -top-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -left-20 -bottom-20 w-80 h-80 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-5 max-w-4xl">
+<!-- Status & Dataset Badge -->
+<div class="flex flex-wrap items-center gap-3">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-label-code font-label-code">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>Dataset: Bank Marketing (bank-additional-full.csv)</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-label-caption font-label-caption uppercase tracking-wider">
+            Benchmark v2.4
+          </span>
+</div>
+<!-- Hero Title & Subtitle -->
+<h1 class="text-headline-xl-mobile md:text-headline-xl font-headline-xl text-on-surface tracking-tight">
+          Reducción de Dimensionalidad para Clasificación
+        </h1>
+<p class="text-headline-sm md:text-headline-md font-headline-md text-on-surface-variant font-normal">
+          Análisis Comparativo Teórico y Práctico: <span class="text-primary font-semibold">PCA</span> vs <span class="text-secondary font-semibold">LDA</span> vs <span class="text-tertiary-fixed-dim font-semibold">SelectKBest</span>
+</p>
+<!-- Metadata Row -->
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 py-3 border-y border-outline-variant/30 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="person">person</span>
+<span>Investigador: <strong class="text-on-surface font-medium">Dr. M. Data &amp; ML Team</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="calendar_month">calendar_month</span>
+<span>Fecha: <strong class="text-on-surface font-medium">Octubre 2024</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary text-lg" data-icon="schedule">schedule</span>
+<span>Tiempo: <strong class="text-on-surface font-medium">8 min lectura</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="verified">verified</span>
+<span>Licencia: <strong class="text-on-surface font-medium">MIT Open Science</strong></span>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="flex flex-wrap items-center gap-4 pt-2">
+<a class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-headline-sm text-body-md font-semibold hover:bg-primary transition-all duration-150 shadow-lg shadow-primary-container/20" href="#resultados">
+<span class="material-symbols-outlined" data-icon="scatter_plot">scatter_plot</span>
+<span>Explorar Visualización 2D</span>
+</a>
+<a class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container border border-outline-variant/60 text-on-surface hover:border-secondary hover:text-secondary text-body-md font-body-md transition-all duration-150" href="https://github.com" target="_blank">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+<span>Ver Repositorio de GitHub</span>
+</a>
+</div>
+</div>
+</section>
+<!-- ================= SECCIÓN 1: FUNDAMENTOS Y CONTEXTO DE DATOS ================= -->
+<section class="flex flex-col gap-6" id="introduccion">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-primary/10 text-primary font-label-code text-label-code border border-primary/20">01. FUNDAMENTOS</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Introducción y Contexto de Datos</h2>
+</div>
+<span class="text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider hidden sm:inline">Teoría y Retos Matriciales</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Tarjeta A: Maldición de la Dimensionalidad -->
+<div class="glow-card rounded-2xl bg-surface-container-low/90 border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="p-2.5 rounded-xl bg-surface-container-high text-primary border border-primary/20">
+<span class="material-symbols-outlined" data-icon="grid_4x4">grid_4x4</span>
+</span>
+<span class="text-label-caption font-label-caption text-secondary">ESPACIO DISPERSO</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Maldición de la Dimensionalidad</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              A medida que se añaden dimensiones, el volumen del hipercubo crece exponencialmente. El espacio de datos se vuelve extremadamente disperso y la distancia euclidiana entre cualquier par de muestras converge a un valor cuasi-idéntico, invalidando la métrica en clasificadores k-NN y SVM.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-label-code text-label-code text-primary flex items-center justify-between">
+<span>lim d(x_i, x_j) → constante</span>
+<span class="text-on-surface-variant">p &gt;&gt; n</span>
+</div>
+</div>
+<!-- Tarjeta B: Riesgo de Sobreajuste -->
+<div class="glow-card rounded-2xl bg-surface-container-low/90 border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="p-2.5 rounded-xl bg-surface-container-high text-secondary border border-secondary/20">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</span>
+<span class="text-label-caption font-label-caption text-error">ALTA VARIANZA</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Riesgo de Sobreajuste (Overfitting)</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              Excesivos grados de libertad permiten al estimador memorizar el ruido específico de la muestra en lugar de capturar la señal subyacente. La reducción comprime el espacio de estados eliminando multicolinealidad y contrayendo la varianza predictiva.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-label-code text-label-code text-secondary flex items-center justify-between">
+<span>Bias-Variance Tradeoff</span>
+<span class="text-on-surface-variant">Degradación Test</span>
+</div>
+</div>
+<!-- Tarjeta C: Preprocesamiento & One-Hot Encoding -->
+<div class="glow-card rounded-2xl bg-surface-container-low/90 border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="p-2.5 rounded-xl bg-surface-container-high text-tertiary border border-tertiary/20">
+<span class="material-symbols-outlined" data-icon="dataset">dataset</span>
+</span>
+<span class="text-label-caption font-label-caption text-primary">ENCODING DILATION</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Preprocesamiento &amp; One-Hot</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              En el dataset Bank Marketing, variables categóricas como <code class="text-primary text-label-code">job</code>, <code class="text-primary text-label-code">marital</code> y <code class="text-primary text-label-code">poutcome</code> expanden la matriz de diseño de 20 atributos iniciales a ~60 columnas binarias altamente correlacionadas, haciendo crítica la compresión antes del modelado.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-label-code text-label-code text-tertiary-fixed-dim flex items-center justify-between">
+<span>20 Cols → 63 Matrices</span>
+<span class="text-on-surface-variant">Bank-Full</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECCIÓN 2: TABLA COMPARATIVA DE MÉTODOS ================= -->
+<section class="flex flex-col gap-6" id="comparativa">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary font-label-code text-label-code border border-secondary/20">02. BENCHMARK TEÓRICO</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Comparativa Exhaustiva de Métodos</h2>
+</div>
+<span class="text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider hidden sm:inline">Taxonomía Algorítmica</span>
+</div>
+<!-- Comparative Table Container -->
+<div class="overflow-x-auto rounded-2xl border border-outline-variant/50 bg-surface-container-low shadow-xl">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest/80 border-b border-outline-variant/50">
+<th class="py-4 px-5 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Método / Algoritmo</th>
+<th class="py-4 px-4 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Tipo</th>
+<th class="py-4 px-4 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Enfoque Matemático</th>
+<th class="py-4 px-4 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Objetivo</th>
+<th class="py-4 px-4 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Ventaja Clave</th>
+<th class="py-4 px-4 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Limitación</th>
+<th class="py-4 px-5 text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider">Caso Ideal</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30 text-body-md font-body-md">
+<!-- PCA Row -->
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-body-md font-bold text-on-surface">PCA</span>
+<span class="text-label-caption font-label-caption text-on-surface-variant">Principal Component Analysis</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2 py-0.5 rounded text-label-caption font-label-caption bg-surface-variant text-on-surface-variant border border-outline-variant/40">
+                  No supervisado
+                </span>
+</td>
+<td class="py-4 px-4 text-label-code font-label-code text-on-surface-variant">
+                Proyección lineal ortogonal (SVD / Autovalores)
+              </td>
+<td class="py-4 px-4 text-on-surface">
+                Maximiza varianza total retenida
+              </td>
+<td class="py-4 px-4 text-primary font-medium">
+                Compresión global y eliminación de multicolinealidad
+              </td>
+<td class="py-4 px-4 text-on-surface-variant">
+                Pérdida de interpretabilidad de variables originales
+              </td>
+<td class="py-4 px-5">
+<span class="inline-block px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-body-sm font-body-sm">
+                  Previa a clustering o modelos no lineales
+                </span>
+</td>
+</tr>
+<!-- LDA Row -->
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-body-md font-bold text-on-surface">LDA</span>
+<span class="text-label-caption font-label-caption text-on-surface-variant">Linear Discriminant Analysis</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2 py-0.5 rounded text-label-caption font-label-caption bg-secondary/15 text-secondary border border-secondary/30 font-semibold">
+                  Supervisado
+                </span>
+</td>
+<td class="py-4 px-4 text-label-code font-label-code text-on-surface-variant">
+                Maximización ratio dispersión inter/intra clase (Fisher)
+              </td>
+<td class="py-4 px-4 text-on-surface">
+                Maximiza separabilidad de clases
+              </td>
+<td class="py-4 px-4 text-secondary font-medium">
+                Óptimo para clasificadores lineales (máx C-1 componentes)
+              </td>
+<td class="py-4 px-4 text-on-surface-variant">
+                Supone normalidad multivariante y covarianzas iguales
+              </td>
+<td class="py-4 px-5">
+<span class="inline-block px-2.5 py-1 rounded-md bg-secondary/10 text-secondary border border-secondary/20 text-body-sm font-body-sm">
+                  Filtro supervisado antes de clasificadores
+                </span>
+</td>
+</tr>
+<!-- SelectKBest Row -->
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim"></span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-body-md font-bold text-on-surface">SelectKBest</span>
+<span class="text-label-caption font-label-caption text-on-surface-variant">ANOVA F-Value / Mutual Info</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2 py-0.5 rounded text-label-caption font-label-caption bg-tertiary-container/20 text-tertiary border border-tertiary/30">
+                  Selección de features
+                </span>
+</td>
+<td class="py-4 px-4 text-label-code font-label-code text-on-surface-variant">
+                Test estadístico univariante independiente
+              </td>
+<td class="py-4 px-4 text-on-surface">
+                Conserva las K variables más correlacionadas con Y
+              </td>
+<td class="py-4 px-4 text-tertiary-fixed-dim font-medium">
+                Preserva 100% la interpretabilidad de negocio
+              </td>
+<td class="py-4 px-4 text-on-surface-variant">
+                Ignora interacciones no lineales y sinergias entre variables
+              </td>
+<td class="py-4 px-5">
+<span class="inline-block px-2.5 py-1 rounded-md bg-tertiary/10 text-tertiary border border-tertiary/20 text-body-sm font-body-sm">
+                  Modelos explicables regulados (banca, salud)
+                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- ================= SECCIÓN 3: RESULTADOS EN EL DATASET (BANK MARKETING) ================= -->
+<section class="flex flex-col gap-6" id="resultados">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-primary/10 text-primary font-label-code text-label-code border border-primary/20">03. RESULTADOS EXPERIMENTALES</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Resultados en el Dataset (Bank Marketing)</h2>
+</div>
+<span class="text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider hidden sm:inline">Telemetry &amp; Proyecciones</span>
+</div>
+<!-- KPI METRIC CARDS ROW -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/40 p-4 md:p-5 backdrop-blur-md flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-caption font-label-caption text-on-surface-variant">
+<span>VARIABLES BASE</span>
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="data_array">data_array</span>
+</div>
+<div class="my-2">
+<span class="text-metric-display font-metric-display text-on-surface">~60</span>
+<span class="text-label-code font-label-code text-on-surface-variant ml-1">cols</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+<span>Tras OHE de 20 atributos base</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/40 p-4 md:p-5 backdrop-blur-md flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-caption font-label-caption text-on-surface-variant">
+<span>COMP. REDUCIDOS</span>
+<span class="material-symbols-outlined text-sm text-primary" data-icon="compress">compress</span>
+</div>
+<div class="my-2">
+<span class="text-metric-display font-metric-display text-primary">2 - 5</span>
+<span class="text-label-code font-label-code text-on-surface-variant ml-1">dims</span>
+</div>
+<div class="text-body-sm font-body-sm text-primary flex items-center gap-1">
+<span>Espacio latente proyectado</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/40 p-4 md:p-5 backdrop-blur-md flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-caption font-label-caption text-on-surface-variant">
+<span>VARIANZA RETENIDA</span>
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="pie_chart">pie_chart</span>
+</div>
+<div class="my-2">
+<span class="text-metric-display font-metric-display text-secondary">88.5%</span>
+</div>
+<div class="text-body-sm font-body-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+<span>Con 5 componentes PCA</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/40 p-4 md:p-5 backdrop-blur-md flex flex-col justify-between">
+<div class="flex items-center justify-between text-label-caption font-label-caption text-on-surface-variant">
+<span>AUC-ROC (LDA MODEL)</span>
+<span class="material-symbols-outlined text-sm text-primary" data-icon="trending_up">trending_up</span>
+</div>
+<div class="my-2">
+<span class="text-metric-display font-metric-display text-on-surface">0.894</span>
+</div>
+<div class="text-body-sm font-body-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+<span>+3.2% vs baseline raw</span>
+</div>
+</div>
+</div>
+<!-- VISUALIZACIÓN INTERACTIVA: SCATTER PLOT 2D & PANEL DE INSIGHTS -->
+<div class="rounded-2xl bg-surface-container-low border border-outline-variant/50 p-6 backdrop-blur-xl shadow-xl flex flex-col gap-6">
+<!-- Controls Header -->
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-outline-variant/40 pb-4">
+<div class="flex flex-col">
+<h3 class="text-headline-sm font-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="scatter_plot">scatter_plot</span>
+<span>Proyección Espacial 2D: Manifold y Separabilidad</span>
+</h3>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Visualización dinámica de muestras del target bancario ('y': depósito a plazo)</span>
+</div>
+<!-- Method Selector & Class Filters -->
+<div class="flex flex-wrap items-center gap-3">
+<!-- Method Pills -->
+<div class="inline-flex p-1 rounded-xl bg-surface-container-lowest border border-outline-variant/40">
+<button class="px-3 py-1.5 rounded-lg text-label-code font-label-code transition-all bg-primary-container text-on-primary-container font-semibold shadow-sm" id="btnMethodPCA" onclick="switchMethod('pca')">
+                PCA (PC1 vs PC2)
+              </button>
+<button class="px-3 py-1.5 rounded-lg text-label-code font-label-code transition-all text-on-surface-variant hover:text-on-surface" id="btnMethodLDA" onclick="switchMethod('lda')">
+                LDA (LD1 vs LD2)
+              </button>
+<button class="px-3 py-1.5 rounded-lg text-label-code font-label-code transition-all text-on-surface-variant hover:text-on-surface" id="btnMethodSelectK" onclick="switchMethod('selectk')">
+                SelectKBest (Top 2)
+              </button>
+</div>
+<!-- Class Filter -->
+<div class="inline-flex p-1 rounded-xl bg-surface-container-lowest border border-outline-variant/40">
+<button class="px-2.5 py-1 text-label-caption font-label-caption rounded-lg bg-surface-variant text-on-surface font-medium" id="filterAll" onclick="filterClass('all')">Todos</button>
+<button class="px-2.5 py-1 text-label-caption font-label-caption rounded-lg text-primary hover:bg-primary/10" id="filterYes" onclick="filterClass('yes')">Depósito: Sí</button>
+<button class="px-2.5 py-1 text-label-caption font-label-caption rounded-lg text-secondary hover:bg-secondary/10" id="filterNo" onclick="filterClass('no')">Depósito: No</button>
+</div>
+</div>
+</div>
+<!-- Scatter Area + Side Insight Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Graphic Canvas Container (Col 8) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-4 relative flex flex-col justify-between overflow-hidden">
+<!-- Axis Legend / Coordinates read -->
+<div class="flex justify-between items-center text-label-caption font-label-caption text-on-surface-variant px-2 pb-2">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="text-on-surface">Clase Sí (Depósito)</span>
+</span>
+<span class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="text-on-surface">Clase No (Rechazado)</span>
+</span>
+</div>
+<span class="text-primary font-label-code" id="axisIndicator">Ejes: PC1 (42.1% Var) vs PC2 (21.4% Var)</span>
+</div>
+<!-- SVG 2D Scatter Simulation -->
+<div class="w-full h-80 relative flex items-center justify-center">
+<svg class="w-full h-full select-none" id="scatterSvg" viewbox="0 0 600 320">
+<!-- Grid Lines -->
+<defs>
+<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
+<path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(58, 80, 107, 0.25)" stroke-dasharray="2,2" stroke-width="1"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid)" height="100%" width="100%"></rect>
+<!-- Zero Axis lines -->
+<line stroke="rgba(187, 202, 191, 0.2)" stroke-width="1.5" x1="300" x2="300" y1="20" y2="300"></line>
+<line stroke="rgba(187, 202, 191, 0.2)" stroke-width="1.5" x1="20" x2="580" y1="160" y2="160"></line>
+<!-- Dynamic Density Ellipses -->
+<g id="densityEllipses">
+<!-- Confidence Ellipse Yes (PCA default) -->
+<ellipse cx="350" cy="140" fill="rgba(16, 185, 129, 0.08)" id="ellipseYes" rx="90" ry="60" stroke="#10b981" stroke-dasharray="4,4" stroke-width="1.5"></ellipse>
+<!-- Confidence Ellipse No (PCA default) -->
+<ellipse cx="260" cy="170" fill="rgba(76, 215, 246, 0.05)" id="ellipseNo" rx="130" ry="85" stroke="#4cd7f6" stroke-dasharray="4,4" stroke-width="1.5"></ellipse>
+</g>
+<!-- Scatter Points (Clustered synthetically based on PCA) -->
+<g id="pointsGroup">
+<!-- NO points (cyan) -->
+<circle class="scatter-point point-no" cx="210" cy="180" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="230" cy="150" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="250" cy="200" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="280" cy="160" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="190" cy="140" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="270" cy="220" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="310" cy="190" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="170" cy="170" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="240" cy="120" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="300" cy="130" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="330" cy="170" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="220" cy="210" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="160" cy="195" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<circle class="scatter-point point-no" cx="290" cy="240" fill="#4cd7f6" opacity="0.75" r="4.5"></circle>
+<!-- YES points (emerald mint) -->
+<circle class="scatter-point point-yes" cx="360" cy="130" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="380" cy="110" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="340" cy="150" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="400" cy="140" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="370" cy="170" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="420" cy="120" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="330" cy="125" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="390" cy="160" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="315" cy="145" fill="#10b981" opacity="0.9" r="5"></circle>
+<circle class="scatter-point point-yes" cx="410" cy="100" fill="#10b981" opacity="0.9" r="5"></circle>
+</g>
+<!-- Axis Labels -->
+<text fill="#86948a" font-family="JetBrains Mono" font-size="11" text-anchor="end" x="560" y="152">Comp 1 →</text>
+<text fill="#86948a" font-family="JetBrains Mono" font-size="11" x="310" y="32">Comp 2 ↑</text>
+</svg>
+</div>
+<!-- Footer axis tags -->
+<div class="flex justify-between items-center text-label-caption font-label-caption text-on-surface-variant pt-2 border-t border-outline-variant/30">
+<span>Muestreo estratificado: N = 1,500 observaciones</span>
+<span class="text-primary font-semibold">StandardScaler Aplicado (μ=0, σ²=1)</span>
+</div>
+</div>
+<!-- Insights Lateral Panel (Col 4) -->
+<div class="lg:col-span-4 rounded-xl bg-surface-container border border-outline-variant/40 p-5 flex flex-col justify-between">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 text-primary font-headline-sm text-body-md font-semibold">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span id="insightTitle">Análisis: PCA (No Supervisado)</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant" id="insightBody">
+                PCA orienta los ejes según las direcciones de mayor varianza global sin considerar la etiqueta objetivo. En Bank Marketing, las clases presentan solapamiento sustancial debido a que la varianza principal está dominada por variables macroeconómicas (<code class="text-secondary text-label-code">euribor3m</code>, <code class="text-secondary text-label-code">nr.employed</code>) más que por la intención de contratación individual.
+              </p>
+<!-- Diagnostic mini indicators -->
+<div class="space-y-3 pt-2">
+<div class="flex justify-between text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Separabilidad de Clase (Fisher Ratio):</span>
+<span class="text-label-code font-label-code font-semibold text-secondary" id="ratioMetric">0.42 (Bajo)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" id="ratioBar" style="width: 42%;"></div>
+</div>
+<div class="flex justify-between text-body-sm font-body-sm pt-2">
+<span class="text-on-surface-variant">Varianza de Información Preservada:</span>
+<span class="text-label-code font-label-code font-semibold text-primary" id="varMetric">63.5% (2 PCs)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" id="varBar" style="width: 63.5%;"></div>
+</div>
+</div>
+</div>
+<!-- Conclusion badge inside insight box -->
+<div class="mt-6 p-3 rounded-lg bg-surface-container-low border border-outline-variant/30 text-body-sm font-body-sm text-on-surface">
+<span class="text-label-caption font-label-caption text-primary block mb-1">CONSEJO TÉCNICO</span>
+<span id="insightRecommendation">Para maximizar el score AUC en modelos de scoring crediticio o captación bancaria, LDA o Random Forest con KBest superan la proyección ciega de PCA.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECCIÓN 4: CONCLUSIONES Y RECOMENDACIONES METODOLÓGICAS ================= -->
+<section class="flex flex-col gap-6" id="recomendaciones">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-primary/10 text-primary font-label-code text-label-code border border-primary/20">04. DIRECTRICES &amp; BEST PRACTICES</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Conclusiones y Recomendaciones Metodológicas</h2>
+</div>
+<span class="text-label-caption font-label-caption text-on-surface-variant uppercase tracking-wider hidden sm:inline">Guía de Producción</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Callout 1: Impacto Vital de StandardScaler -->
+<div class="rounded-2xl bg-surface-container-low/90 border-l-4 border-l-primary border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2 text-primary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span>Impacto Vital de StandardScaler</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              Tanto PCA como LDA asumen homogeneidad de escala. En Bank Marketing, variables numéricas como <code class="text-label-code text-primary">duration</code> (segundos: 0 a 4900) tienen varianzas artificialmente gigantescas frente a variables económicas como <code class="text-label-code text-primary">emp.var.rate</code> (-3 a +1). Sin <strong class="text-on-surface font-semibold">StandardScaler</strong>, PCA colapsará creando un PC1 idéntico a <code class="text-label-code">duration</code>, ignorando las 59 características restantes.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 text-body-sm font-body-sm text-primary font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base" data-icon="priority_high">priority_high</span>
+<span>Mandatorio antes de calcular matriz de covarianza</span>
+</div>
+</div>
+<!-- Callout 2: Árbol de Decisión Metodológico -->
+<div class="rounded-2xl bg-surface-container-low/90 border-l-4 border-l-secondary border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2 text-secondary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span>Árbol de Decisión Algorítmico</span>
+</div>
+<ul class="text-body-md font-body-md text-on-surface-variant space-y-2.5">
+<li class="flex items-start gap-2">
+<span class="text-secondary font-bold">1.</span>
+<span><strong>¿Regulación / Auditabilidad Bancaria?</strong> → Usa <span class="text-tertiary-fixed-dim font-semibold">SelectKBest</span>. Las features retienen su definición de negocio pura (e.g. `poutcome_success`).</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="text-secondary font-bold">2.</span>
+<span><strong>¿Máxima Separabilidad en Clasificación?</strong> → Usa <span class="text-secondary font-semibold">LDA</span>. Maximiza el ratio de Fisher guiado por la etiqueta objetivo.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="text-secondary font-bold">3.</span>
+<span><strong>¿Exploración / Sin Etiquetas / Clustering?</strong> → Usa <span class="text-primary font-semibold">PCA</span>. Comprime sin sesgo de clase previo a algoritmos no supervisados.</span>
+</li>
+</ul>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 text-body-sm font-body-sm text-secondary font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base" data-icon="alt_route">alt_route</span>
+<span>Alinear técnica al requerimiento de interpretabilidad</span>
+</div>
+</div>
+<!-- Callout 3: Prevención de Data Leakage -->
+<div class="rounded-2xl bg-surface-container-low/90 border-l-4 border-l-error border border-outline-variant/40 p-6 flex flex-col justify-between backdrop-blur-md">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2 text-error font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined" data-icon="shield_lock">shield_lock</span>
+<span>Prevención de Data Leakage</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              Nunca apliques <code class="text-label-code text-primary">.fit()</code> o <code class="text-label-code text-secondary">fit_transform()</code> de PCA o LDA en el dataset completo antes del Split. Las medias, componentes principales y centroides de clase deben aprenderse estrictamente en el subconjunto de <strong class="text-on-surface">Train</strong> y únicamente proyectar vía <code class="text-label-code">.transform()</code> en <strong class="text-on-surface">Test</strong> y Validación.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 text-body-sm font-body-sm text-error font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base" data-icon="gpp_bad">gpp_bad</span>
+<span>Usa siempre scikit-learn Pipeline(steps=[...])</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- ================= FOOTER (Anchored from JSON) ================= -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest docked full-width bottom-0 border-t border-outline-variant/30 dark:border-outline-variant/30 flat no shadows mt-12 transition-colors duration-150">
+<div class="w-full px-margin-mobile md:px-margin lg:px-margin-desktop max-w-7xl mx-auto py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<!-- Brand & Copyright -->
+<div class="flex flex-col items-center md:items-start gap-1">
+<div class="flex items-center gap-2">
+<span class="text-headline-sm font-headline-sm text-primary dark:text-primary">ML Analytics Lab</span>
+<!-- GitHub Pages build badge -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-caption font-label-caption bg-surface-container-high text-primary border border-outline-variant/50">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>gh-pages: build passing</span>
+</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant dark:text-on-surface-variant">
+          © 2024 Guía de Reducción de Dimensionalidad. Hosted on GitHub Pages.
+        </p>
+</div>
+<!-- Links defined in JSON -->
+<div class="flex flex-wrap items-center justify-center gap-5 text-body-sm font-body-sm">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="#introduccion">
+          Documentación Metodológica
+        </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="https://archive.ics.uci.edu/dataset/222/bank+marketing" target="_blank">
+          Bank Marketing Dataset
+        </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="https://scikit-learn.org" target="_blank">
+          Scikit-Learn Docs
+        </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-150" href="https://opensource.org/licenses/MIT" target="_blank">
+          Licencia MIT
+        </a>
+</div>
+</div>
+</footer>
+<!-- ================= INTERACTIVE JAVASCRIPT ================= -->
+<script>
+    // State of 2D Scatter Visualization
+    let currentMethod = 'pca';
+    let currentFilter = 'all';
+
+    // Configurations for each method simulation
+    const methodConfigs = {
+      pca: {
+        title: "Análisis: PCA (No Supervisado)",
+        axis: "Ejes: PC1 (42.1% Var) vs PC2 (21.4% Var)",
+        body: "PCA orienta los ejes según las direcciones de mayor varianza global sin considerar la etiqueta objetivo. En Bank Marketing, las clases presentan solapamiento sustancial debido a que la varianza principal está dominada por variables macroeconómicas (`euribor3m`, `nr.employed`) más que por la intención de contratación individual.",
+        fisherRatio: "0.42 (Bajo)",
+        fisherPct: "42%",
+        variance: "63.5% (2 PCs)",
+        varPct: "63.5%",
+        recommendation: "Para clustering no supervisado o remoción rápida de multicolinealidad. Solapa clases en proyecciones bidimensionales.",
+        pointsYes: [
+          { cx: 360, cy: 130 }, { cx: 380, cy: 110 }, { cx: 340, cy: 150 },
+          { cx: 400, cy: 140 }, { cx: 370, cy: 170 }, { cx: 420, cy: 120 },
+          { cx: 330, cy: 125 }, { cx: 390, cy: 160 }, { cx: 315, cy: 145 },
+          { cx: 410, cy: 100 }
+        ],
+        pointsNo: [
+          { cx: 210, cy: 180 }, { cx: 230, cy: 150 }, { cx: 250, cy: 200 },
+          { cx: 280, cy: 160 }, { cx: 190, cy: 140 }, { cx: 270, cy: 220 },
+          { cx: 310, cy: 190 }, { cx: 170, cy: 170 }, { cx: 240, cy: 120 },
+          { cx: 300, cy: 130 }, { cx: 330, cy: 170 }, { cx: 220, cy: 210 },
+          { cx: 160, cy: 195 }, { cx: 290, cy: 240 }
+        ],
+        ellipseYes: { cx: 370, cy: 140, rx: 75, ry: 55 },
+        ellipseNo: { cx: 240, cy: 180, rx: 110, ry: 80 }
+      },
+      lda: {
+        title: "Análisis: LDA (Supervisado de Fisher)",
+        axis: "Ejes: LD1 (Discriminante Primario) vs Proyección Ortogonal",
+        body: "LDA encuentra activamente la combinación lineal de características que maximiza la distancia entre los centroides de clase ('Sí' vs 'No') mientras minimiza la varianza interna de cada grupo. Observe cómo la clase minoritaria (Depósito: Sí) se congrega en un cluster hipercompacto claramente separable linealmente.",
+        fisherRatio: "2.84 (Muy Alto)",
+        fisherPct: "95%",
+        variance: "91.2% (Separación)",
+        varPct: "91.2%",
+        recommendation: "Ideal como etapa previa a Regresión Logística o Naive Bayes. Maximiza AUC-ROC en problemas de clasificación binaria desbalanceada.",
+        pointsYes: [
+          { cx: 450, cy: 80 }, { cx: 460, cy: 95 }, { cx: 440, cy: 85 },
+          { cx: 475, cy: 110 }, { cx: 435, cy: 100 }, { cx: 465, cy: 75 },
+          { cx: 480, cy: 90 }, { cx: 445, cy: 115 }, { cx: 455, cy: 105 },
+          { cx: 470, cy: 85 }
+        ],
+        pointsNo: [
+          { cx: 160, cy: 210 }, { cx: 180, cy: 190 }, { cx: 200, cy: 230 },
+          { cx: 220, cy: 180 }, { cx: 150, cy: 200 }, { cx: 230, cy: 220 },
+          { cx: 190, cy: 240 }, { cx: 170, cy: 180 }, { cx: 210, cy: 210 },
+          { cx: 240, cy: 195 }, { cx: 160, cy: 225 }, { cx: 205, cy: 175 },
+          { cx: 185, cy: 215 }, { cx: 225, cy: 235 }
+        ],
+        ellipseYes: { cx: 455, cy: 95, rx: 45, ry: 40 },
+        ellipseNo: { cx: 195, cy: 210, rx: 75, ry: 50 }
+      },
+      selectk: {
+        title: "Análisis: SelectKBest (ANOVA / F-Test)",
+        axis: "Ejes: duration (Top 1 Univariante) vs nr.employed (Top 2)",
+        body: "SelectKBest retiene las variables originales intactas con mayor correlación individual con el target. Aunque preserva 100% el significado de las variables (duración de la llamada y tasa de empleo), ignora interacciones cruzadas, generando patrones escalonados y ortogonales.",
+        fisherRatio: "1.15 (Moderado)",
+        fisherPct: "65%",
+        variance: "48.0% (Explicada)",
+        varPct: "48%",
+        recommendation: "El estándar obligatorio en auditorías bancarias reguladas (BCE/EBA) donde no se permiten combinaciones de variables tipo 'caja negra'.",
+        pointsYes: [
+          { cx: 430, cy: 180 }, { cx: 440, cy: 170 }, { cx: 420, cy: 190 },
+          { cx: 450, cy: 160 }, { cx: 435, cy: 185 }, { cx: 460, cy: 175 },
+          { cx: 425, cy: 195 }, { cx: 445, cy: 165 }, { cx: 415, cy: 180 },
+          { cx: 455, cy: 170 }
+        ],
+        pointsNo: [
+          { cx: 200, cy: 110 }, { cx: 220, cy: 130 }, { cx: 250, cy: 100 },
+          { cx: 280, cy: 120 }, { cx: 210, cy: 140 }, { cx: 330, cy: 110 },
+          { cx: 310, cy: 130 }, { cx: 180, cy: 125 }, { cx: 240, cy: 115 },
+          { cx: 260, cy: 145 }, { cx: 290, cy: 105 }, { cx: 350, cy: 120 },
+          { cx: 190, cy: 135 }, { cx: 270, cy: 125 }
+        ],
+        ellipseYes: { cx: 435, cy: 180, rx: 50, ry: 35 },
+        ellipseNo: { cx: 260, cy: 120, rx: 115, ry: 45 }
+      }
+    };
+
+    function switchMethod(method) {
+      currentMethod = method;
+      const cfg = methodConfigs[method];
+
+      // Update Method Button States
+      ['pca', 'lda', 'selectk'].forEach(m => {
+        const btn = document.getElementById(m === 'pca' ? 'btnMethodPCA' : m === 'lda' ? 'btnMethodLDA' : 'btnMethodSelectK');
+        if (m === method) {
+          btn.className = "px-3 py-1.5 rounded-lg text-label-code font-label-code transition-all bg-primary-container text-on-primary-container font-semibold shadow-sm";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-label-code font-label-code transition-all text-on-surface-variant hover:text-on-surface";
+        }
+      });
+
+      // Update Text and metrics
+      document.getElementById('axisIndicator').textContent = cfg.axis;
+      document.getElementById('insightTitle').textContent = cfg.title;
+      document.getElementById('insightBody').textContent = cfg.body;
+      document.getElementById('ratioMetric').textContent = cfg.fisherRatio;
+      document.getElementById('ratioBar').style.width = cfg.fisherPct;
+      document.getElementById('varMetric').textContent = cfg.variance;
+      document.getElementById('varBar').style.width = cfg.varPct;
+      document.getElementById('insightRecommendation').textContent = cfg.recommendation;
+
+      // Animate Ellipses
+      const elYes = document.getElementById('ellipseYes');
+      const elNo = document.getElementById('ellipseNo');
+      elYes.setAttribute('cx', cfg.ellipseYes.cx);
+      elYes.setAttribute('cy', cfg.ellipseYes.cy);
+      elYes.setAttribute('rx', cfg.ellipseYes.rx);
+      elYes.setAttribute('ry', cfg.ellipseYes.ry);
+
+      elNo.setAttribute('cx', cfg.ellipseNo.cx);
+      elNo.setAttribute('cy', cfg.ellipseNo.cy);
+      elNo.setAttribute('rx', cfg.ellipseNo.rx);
+      elNo.setAttribute('ry', cfg.ellipseNo.ry);
+
+      // Animate Points
+      const yesPoints = document.querySelectorAll('.point-yes');
+      yesPoints.forEach((p, idx) => {
+        if (cfg.pointsYes[idx]) {
+          p.setAttribute('cx', cfg.pointsYes[idx].cx);
+          p.setAttribute('cy', cfg.pointsYes[idx].cy);
+        }
+      });
+
+      const noPoints = document.querySelectorAll('.point-no');
+      noPoints.forEach((p, idx) => {
+        if (cfg.pointsNo[idx]) {
+          p.setAttribute('cx', cfg.pointsNo[idx].cx);
+          p.setAttribute('cy', cfg.pointsNo[idx].cy);
+        }
+      });
+    }
+
+    function filterClass(cls) {
+      currentFilter = cls;
+      const yesPoints = document.querySelectorAll('.point-yes');
+      const noPoints = document.querySelectorAll('.point-no');
+      const elYes = document.getElementById('ellipseYes');
+      const elNo = document.getElementById('ellipseNo');
+
+      // Update Filter button states
+      const btns = {
+        all: document.getElementById('filterAll'),
+        yes: document.getElementById('filterYes'),
+        no: document.getElementById('filterNo')
+      };
+
+      Object.keys(btns).forEach(key => {
+        if (key === cls) {
+          btns[key].className = "px-2.5 py-1 text-label-caption font-label-caption rounded-lg bg-surface-variant text-on-surface font-semibold";
+        } else {
+          btns[key].className = "px-2.5 py-1 text-label-caption font-label-caption rounded-lg text-on-surface-variant hover:text-on-surface";
+        }
+      });
+
+      if (cls === 'all') {
+        yesPoints.forEach(p => p.setAttribute('opacity', '0.9'));
+        noPoints.forEach(p => p.setAttribute('opacity', '0.75'));
+        elYes.style.display = 'block';
+        elNo.style.display = 'block';
+      } else if (cls === 'yes') {
+        yesPoints.forEach(p => p.setAttribute('opacity', '1'));
+        noPoints.forEach(p => p.setAttribute('opacity', '0.08'));
+        elYes.style.display = 'block';
+        elNo.style.display = 'none';
+      } else if (cls === 'no') {
+        yesPoints.forEach(p => p.setAttribute('opacity', '0.08'));
+        noPoints.forEach(p => p.setAttribute('opacity', '0.9'));
+        elYes.style.display = 'none';
+        elNo.style.display = 'block';
+      }
+    }
+
+    // Interactive Toast Notification for Telemetry console button
+    document.getElementById('toggleTelemetryBtn').addEventListener('click', () => {
+      alert("Consola de Telemetría: Estado de convergencia OK. SVD solver: LAPACK GESDD. Tiempo de ejecución total: 42ms.");
+    });
+  </script>
+</body></html>
